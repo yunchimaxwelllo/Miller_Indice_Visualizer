@@ -1,16 +1,79 @@
-# React + Vite
+# Miller Indices Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive, 3D educational tool designed to help students and researchers visualize crystallographic planes and directions. Built with **React**, **Three.js**, and **Tailwind CSS**.
 
-Currently, two official plugins are available:
+## 🚀 Live Demo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+[Check out the live app here!](https://miller-indice-visualizer.vercel.app)
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Dynamic 3D Rendering**: Rotate, zoom, and pan around crystal lattices to understand spatial relationships.
 
-## Expanding the ESLint configuration
+* **Support for All 7 Crystal Systems**: Cubic, Tetragonal, Orthorhombic, Rhombohedral, Hexagonal, Monoclinic, and Triclinic.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* **Miller-Bravais (4-Index) Support**: Specialized visualization for Hexagonal systems using $(h k i l)$ notation.
+
+* **Real-time Lattice Manipulation**: Adjust lattice parameters ($a, b, c$) and inter-axial angles ($\alpha, \beta, \gamma$) with instant feedback.
+
+* **Quiz Mode**: An educational mode that provides absolute intercept labels ($1/2 a, 1 b, \dots$) in 3D space.
+
+* **Plane & Direction Toggle**: Switch between visualizing Miller planes and crystallographic directions.
+
+## 🛠️ Tech Stack
+
+* **Framework**: [React](https://react.dev/)
+
+* **Build Tool**: [Vite](https://vitejs.dev/)
+
+* **3D Engine**: [Three.js](https://threejs.org/)
+
+* **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+
+* **Icons**: [Lucide React](https://lucide.dev/)
+
+## 📦 Installation & Local Development
+
+To run this project on your local machine, follow these steps:
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/miller-indices-visualizer.git
+    cd miller-indices-visualizer
+
+    ```
+
+2. **Install Dependencies:**
+
+    ```bash 
+    npm install
+    ```
+
+3. **Start the development server:**
+
+    ```bash
+    npm run dev
+    ```
+
+4. **Build for production:**
+
+    ```bash
+    enpm run build
+    ```
+
+## 📖 How It Works
+
+**Plane Logic**
+
+The visualizer calculates the intercepts of the plane with the unit cell axes based on the provided Miller indices $(h k l)$. For negative indices, the tool automatically shifts the origin to ensure the plane is visible within the primary unit cell.
+
+**Direction Logic**
+
+Directions $[u v w]$ are rendered as vectors starting from the origin. The tool includes logic to clip vectors so they remain visually contained within the lattice bounds.
+
+## 📄 License
+
+This project is open-source and available under the MIT License.
+
+Created as an educational resource for Material Science and Solid State Physics.
