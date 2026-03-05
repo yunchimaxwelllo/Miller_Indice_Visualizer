@@ -47,21 +47,25 @@ const Overbar = ({ val }) => {
   return <span>{num}</span>;
 };
 
-// Formats the intercept (1/index) as a fraction string, applying an origin shift so it's always >= 0
-const formatIntercept = (index) => {
+const formatIntercept = (index, shift = 0) => {
   if (index === 0) return "∞";
   
-  if (index > 0) {
-      if (index === 1) return "1";
-      return `1/${index}`;
-  } else {
-      // If index is negative, shift origin by +1: (1/index) + 1
-      const absIndex = Math.abs(index);
-      const num = absIndex - 1;
-      
-      if (num === 0) return "0";
-      return `${num}/${absIndex}`;
+  let num = 1 + shift * index;
+  let den = index;
+  
+  if (num === 0) return "0";
+  
+  let g = gcd(Math.abs(num), Math.abs(den));
+  num /= g;
+  den /= g;
+  
+  if (den < 0) {
+    num = -num;
+    den = -den;
   }
+  
+  if (den === 1) return `${num}`;
+  return `${num}/${den}`;
 };
 
 const getParamLabel = (key) => {
@@ -69,6 +73,34 @@ const getParamLabel = (key) => {
   if (key === 'beta') return 'β';
   if (key === 'gamma') return 'γ';
   return key;
+};
+
+// --- 3D Text Helper ---
+const createTextSprite = (message, color = '#ffffff') => {
+  const fontFace = 'Arial';
+  const fontSize = 70;
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  context.font = `Bold ${fontSize}px ${fontFace}`;
+  const metrics = context.measureText(message);
+  const textWidth = metrics.width;
+  
+  canvas.width = textWidth + 20;
+  canvas.height = fontSize + 20;
+  
+  context.font = `Bold ${fontSize}px ${fontFace}`;
+  context.fillStyle = color;
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.fillText(message, canvas.width / 2, canvas.height / 2);
+  
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });
+  const sprite = new THREE.Sprite(material);
+  const scaleFactor = 0.0025; 
+  sprite.scale.set(canvas.width * scaleFactor, canvas.height * scaleFactor, 1);
+  return sprite;
 };
 
 /**
@@ -113,7 +145,6 @@ const toCartesian = (fractional, basis) => {
 
 // --- Plane Logic ---
 
-// Standard: W = 1 + sum(negative indices)
 const calculatePlaneOffset = (h, k, l) => {
   let w = 1;
   if (h < 0) w += h;
@@ -122,19 +153,20 @@ const calculatePlaneOffset = (h, k, l) => {
   return w;
 };
 
+const getPlaneConstant = (h, k, l, isHexagonal) => {
+  if (isHexagonal) {
+      return (l < 0) ? 1 + l : 1;
+  } else {
+      return calculatePlaneOffset(h, k, l);
+  }
+};
+
 const getFractionalIntersections = (h, k, l, isHexagonal) => {
   if (h === 0 && k === 0 && l === 0) return [];
   const points = [];
   const eps = 1e-5;
 
-  let W = 1;
-  if (isHexagonal) {
-      // Hexagonal 4-Index logic: Shift origin 000 -> 001 if l < 0
-      W = (l < 0) ? 1 + l : 1;
-  } else {
-      // Standard logic: Shift origin to positive corners for negative indices
-      W = calculatePlaneOffset(h, k, l);
-  }
+  const W = getPlaneConstant(h, k, l, isHexagonal);
 
   const addPoint = (x, y, z) => {
     let inside = false;
@@ -305,8 +337,7 @@ export default function App() {
     target: { h: 1, k: 1, l: 1 }, 
     userInput: { v1: '', v2: '', v3: '', v4: '' }, 
     feedback: null,
-    message: '',
-    score: 0
+    message: ''
   });
 
   const mountRef = useRef(null);
@@ -338,14 +369,13 @@ export default function App() {
       l = Math.floor(Math.random() * 7) - 3;
     } while (h === 0 && k === 0 && l === 0);
 
-    setQuizState({
+    setQuizState(prev => ({
       system: randSystem,
       target: { h, k, l },
       userInput: { v1: '', v2: '', v3: '', v4: '' },
       feedback: null,
-      message: '',
-      score: quizState.score
-    });
+      message: ''
+    }));
   };
 
   // Init quiz on tab switch
@@ -371,7 +401,6 @@ export default function App() {
     let ansStr = "";
 
     if (isHex4) {
-      // Plane: h, k, i, l -> i = -(h+k)
       const correctI = -(target.h + target.k);
       if (
         (u1 === target.h && u2 === target.k && u3 === correctI && u4 === target.l) ||
@@ -391,7 +420,7 @@ export default function App() {
     }
 
     if (correct) {
-      setQuizState(prev => ({ ...prev, feedback: 'correct', message: 'Correct! Well done.', score: prev.score + 1 }));
+      setQuizState(prev => ({ ...prev, feedback: 'correct', message: 'Correct! Well done.' }));
       setTimeout(() => {
          setQuizState(p => ({...p, feedback: null, message: ''}));
          generateQuiz();
@@ -523,7 +552,8 @@ export default function App() {
       cell: new THREE.Group(),
       lattice: new THREE.Group(),
       plane: new THREE.Group(),
-      direction: new THREE.Group()
+      direction: new THREE.Group(),
+      labels: new THREE.Group()
     };
     Object.values(groupsRef.current).forEach(g => mainGroup.add(g));
 
@@ -662,6 +692,62 @@ export default function App() {
              groupsRef.current.plane.add(s);
            });
         }
+
+        if (isQuiz) {
+           const labelColor = '#fbbf24'; 
+           
+           // Exactly REVERTED to the safe Shifted Origin method
+           let sx = 0, sy = 0, sz = 0;
+           if (isFourIndex) {
+               if (l < 0) sz = 1; // Only shifted along Z for hexagonal
+           } else {
+               if (h < 0) sx = 1;
+               if (k < 0) sy = 1;
+               if (l < 0) sz = 1;
+           }
+           const shiftedOriginFrac = new THREE.Vector3(sx, sy, sz);
+           
+           const addLabel = (index, axisFracStep, defaultName, shift) => {
+              if (index !== 0) {
+                 const step = 1.0 / index;
+                 const absoluteFrac = shiftedOriginFrac.clone().add(axisFracStep.clone().multiplyScalar(step));
+                 
+                 let textStr = `${formatIntercept(index, shift)} ${defaultName}`;
+
+                 // FIX FOR THE "green should be 1b and red 1a" CROSSOVER:
+                 // If the math yields a "0" label but the point physically sits on the exact opposite axis 
+                 // (e.g. sits on Y axis distance 1), rename it to match visual expectations.
+                 if (formatIntercept(index, shift) === "0") {
+                     const eps = 0.01;
+                     if (Math.abs(absoluteFrac.x) < eps && Math.abs(absoluteFrac.y - 1) < eps && Math.abs(absoluteFrac.z) < eps) {
+                         textStr = isFourIndex ? "1 a₂" : "1 b";
+                     } else if (Math.abs(absoluteFrac.y) < eps && Math.abs(absoluteFrac.x - 1) < eps && Math.abs(absoluteFrac.z) < eps) {
+                         textStr = isFourIndex ? "1 a₁" : "1 a";
+                     } else if (Math.abs(absoluteFrac.x) < eps && Math.abs(absoluteFrac.y) < eps && Math.abs(absoluteFrac.z - 1) < eps) {
+                         textStr = "1 c";
+                     }
+                 }
+
+                 if (Math.abs(step) <= 2.5) {
+                    const pos = toCartesian(absoluteFrac, basis);
+                    pos.add(new THREE.Vector3(0, 0.15, 0)); // Slight offset upwards
+                    const sprite = createTextSprite(textStr, labelColor);
+                    sprite.position.copy(pos);
+                    groupsRef.current.labels.add(sprite);
+                 }
+              }
+           };
+
+           // Add labels strictly along coordinate steps from shifted origin
+           addLabel(h, new THREE.Vector3(1, 0, 0), isFourIndex ? 'a₁' : 'a', sx);
+           addLabel(k, new THREE.Vector3(0, 1, 0), isFourIndex ? 'a₂' : 'b', sy);
+           addLabel(l, new THREE.Vector3(0, 0, 1), 'c', sz);
+           
+           if (isFourIndex) {
+              const i = -(h+k);
+              addLabel(i, new THREE.Vector3(-1, -1, 0), 'a₃', 0); // Hexagonal basal plane shift is explicitly 0
+           }
+        }
       }
     } else {
       // Direction
@@ -681,7 +767,6 @@ export default function App() {
       
       const vector = toCartesian(vecFractional, basis);
       
-      // Calculate start point based on shifting logic for direction
       let startFractional = new THREE.Vector3(0,0,0);
       if (isFourIndex) {
           if (w < 0) startFractional.z = 1;
@@ -858,31 +943,12 @@ export default function App() {
                 <div className="relative z-10">
                    <div className="flex justify-between items-start mb-4">
                      <span className="bg-blue-900/50 text-blue-300 text-xs font-bold px-2 py-1 rounded border border-blue-800/50 uppercase tracking-wide">{quizState.system}</span>
-                     <span className="text-xs font-mono text-gray-500">Score: {quizState.score}</span>
                    </div>
                    
                    <h3 className="text-sm text-gray-400 uppercase tracking-wider font-bold mb-2">Identify {isFourIndex ? '(h k i l)' : '(h k l)'}</h3>
                    
                    <div className="bg-black/30 p-3 rounded-lg border border-gray-700/50 mb-4">
-                       <div className="text-sm font-mono text-blue-300 space-y-1">
-                          <p className="text-gray-400 text-xs mb-1">Plane Intercepts (Absolute):</p>
-                          <ul className="list-disc list-inside pl-1 text-gray-300">
-                             {isFourIndex ? (
-                                 <>
-                                     <li>a₁: {formatIntercept(quizState.target.h)}</li>
-                                     <li>a₂: {formatIntercept(quizState.target.k)}</li>
-                                     <li>a₃: {formatIntercept(-(quizState.target.h + quizState.target.k))}</li>
-                                     <li>c: {formatIntercept(quizState.target.l)}</li>
-                                 </>
-                             ) : (
-                                 <>
-                                     <li>a: {formatIntercept(quizState.target.h)}</li>
-                                     <li>b: {formatIntercept(quizState.target.k)}</li>
-                                     <li>c: {formatIntercept(quizState.target.l)}</li>
-                                 </>
-                             )}
-                          </ul>
-                       </div>
+                       <p className="text-xs text-gray-400 italic text-center">Rotate the model to find the intercept labels!</p>
                    </div>
 
                    {/* Answer Inputs */}
