@@ -16,9 +16,14 @@ An interactive, 3D educational tool designed to help students and researchers vi
 
 * **Real-time Lattice Manipulation**: Adjust lattice parameters ($a, b, c$) and inter-axial angles ($\alpha, \beta, \gamma$) with instant feedback.
 
-* **Quiz Mode**: An educational mode that provides absolute intercept labels ($1/2 a, 1 b, \dots$) in 3D space.
-
 * **Plane & Direction Toggle**: Switch between visualizing Miller planes and crystallographic directions.
+
+* **Interactive Educational Quiz Mode**: 
+
+    * **Identify:** Rotate the model to read absolute fractional intercepts and deduce the correct Miller indices.
+
+    * **Draw Plane:** A free-form 3D sandbox. Define custom grid partitions for each specific axis, click to place nodes directly in 3D space, and construct physical planes. Features robust validation to accept any mathematically valid parallel plane.
+
 
 ## 🛠️ Tech Stack
 
@@ -64,13 +69,21 @@ To run this project on your local machine, follow these steps:
 
 ## 📖 How It Works
 
-**Plane Logic**
+**Plane and Direction Logic**
 
-The visualizer calculates the intercepts of the plane with the unit cell axes based on the provided Miller indices $(h k l)$. For negative indices, the tool automatically shifts the origin to ensure the plane is visible within the primary unit cell.
+The visualizer calculates the fractional intersections of the plane with the unit cell axes based on the provided Miller indices. For negative indices, the tool automatically shifts the origin to ensure the plane is visible within the primary unit cell. Directions are rendered as vectors with dynamic clipping so they remain visually contained within the lattice bounds..
 
-**Direction Logic**
+**Interactive Drawing & Parallel Validation**
 
-Directions $[u v w]$ are rendered as vectors starting from the origin. The tool includes logic to clip vectors so they remain visually contained within the lattice bounds.
+In the "Draw Plane" quiz mode, the engine uses a Three.js raycaster to detect exact 3D clicks on dynamic grid nodes. When a user connects 3 or more points:
+
+1. The app extracts non-collinear points to compute the Fractional Normal Vector of the user's custom shape.
+
+2. It verifies all selected points are perfectly coplanar.
+
+3. It calculates the Cross Product between the user's fractional normal and the target Miller indices. If the result is zero, the shape is verified as a perfectly parallel plane, teaching students that Miller indices represent infinite families of parallel planes, not just a single static shape.
+
+
 
 ## 📄 License
 
