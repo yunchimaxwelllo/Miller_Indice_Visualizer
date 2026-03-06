@@ -44,7 +44,7 @@ To run this project on your local machine, follow these steps:
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/miller-indices-visualizer.git
+    git clone https://github.com/yunchimaxwelllo/miller-indices-visualizer.git
     cd miller-indices-visualizer
 
     ```
