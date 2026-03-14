@@ -235,6 +235,7 @@ export default function App() {
   const [opacity, setOpacity] = useState(0.6);
   const [showVertices, setShowVertices] = useState(true);
   const [autoRotate, setAutoRotate] = useState(false);
+  const [showLabels, setShowLabels] = useState(true);
   const [selectedSystem, setSelectedSystem] = useState('Simple Cubic');
   const [latticeParams, setLatticeParams] = useState(CRYSTAL_SYSTEMS['Simple Cubic']);
   
@@ -736,7 +737,9 @@ export default function App() {
       }
     }
 
-    if (activeTab === 'visualizer' && mode === 'plane' || (activeTab === 'quiz' && quizTab === 'identify')) {
+    const shouldShowLabels = (activeTab === 'visualizer' && mode === 'plane' && showLabels) || (activeTab === 'quiz' && quizTab === 'identify');
+
+    if (shouldShowLabels) {
         const labelColor = '#fbbf24'; 
         let targetH = activeTab === 'quiz' ? quizState.target.h : indices.h;
         let targetK = activeTab === 'quiz' ? quizState.target.k : indices.k;
@@ -871,7 +874,7 @@ export default function App() {
       }
     }
 
-  }, [indices, direction, opacity, showVertices, selectedSystem, mode, latticeParams, activeTab, quizTab, quizState, partitions, selectedPoints, isShowingAnswer]);
+  }, [indices, direction, opacity, showVertices, selectedSystem, mode, latticeParams, activeTab, quizTab, quizState, partitions, selectedPoints, isShowingAnswer, showLabels]);
 
   useEffect(() => { if (controlsRef.current) controlsRef.current.autoRotate = autoRotate; }, [autoRotate]);
 
@@ -880,32 +883,31 @@ export default function App() {
       
       <div className="flex-grow h-[60vh] md:h-auto relative bg-gradient-to-br from-gray-900 to-black cursor-crosshair">
         <div ref={mountRef} className="w-full h-full" />
-        <div className="absolute top-4 left-4 bg-gray-900/80 backdrop-blur-sm p-3 rounded-lg border border-gray-700 pointer-events-none select-none">
+        <div className="absolute top-6 left-6 bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-700 pointer-events-none select-none shadow-lg">
           {isFourIndex ? (
              <>
-                <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 bg-red-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">a₁</span></div>
-                <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 bg-green-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">a₂</span></div>
-                <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 bg-yellow-400 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">a₃</span></div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">c</span></div>
+                <div className="flex items-center gap-4 mb-3"><div className="w-5 h-5 bg-red-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">a₁</span></div>
+                <div className="flex items-center gap-4 mb-3"><div className="w-5 h-5 bg-green-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">a₂</span></div>
+                <div className="flex items-center gap-4 mb-3"><div className="w-5 h-5 bg-yellow-400 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">a₃</span></div>
+                <div className="flex items-center gap-4"><div className="w-5 h-5 bg-blue-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">c</span></div>
              </>
           ) : (
             <>
-              <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 bg-red-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">a</span></div>
-              <div className="flex items-center gap-2 mb-1"><div className="w-3 h-3 bg-green-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">b</span></div>
-              <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">c</span></div>
+              <div className="flex items-center gap-4 mb-3"><div className="w-5 h-5 bg-red-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">a</span></div>
+              <div className="flex items-center gap-4 mb-3"><div className="w-5 h-5 bg-green-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">b</span></div>
+              <div className="flex items-center gap-4"><div className="w-5 h-5 bg-blue-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">c</span></div>
             </>
           )}
           {currentMode === 'direction' && (
-             <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-600">
-               <div className="w-3 h-3 bg-fuchsia-500 rounded-full"></div><span className="text-xs text-gray-300 font-mono font-bold">Vector</span>
+             <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-600">
+               <div className="w-5 h-5 bg-fuchsia-500 rounded-full"></div><span className="text-lg text-gray-200 font-mono font-bold">Vector</span>
              </div>
           )}
         </div>
 
         {activeTab === 'quiz' && quizTab === 'draw' && !isShowingAnswer && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-900/80 backdrop-blur px-4 py-2 rounded-full border border-gray-700 text-xs text-gray-300 flex items-center gap-2 pointer-events-none shadow-lg">
-                <PenTool className="w-4 h-4 text-emerald-400" />
-                Click any points on the grid to construct a parallel plane
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900/90 backdrop-blur px-8 py-4 rounded-full border-2 border-gray-700 text-lg font-bold text-emerald-400 pointer-events-none shadow-2xl whitespace-nowrap tracking-wide">
+                Click any points on the grid to construct planes
             </div>
         )}
       </div>
@@ -968,9 +970,9 @@ export default function App() {
                  <h3 className="text-xs font-semibold uppercase text-gray-400">Lattice Params</h3>
                </div>
                
-               <div className="bg-gray-800/50 p-2 rounded border border-gray-700/50 text-[10px] font-mono text-gray-400 flex flex-col gap-1">
-                 <div className="flex items-center gap-2"><Calculator className="w-3 h-3 text-blue-400"/> <span>{constraints.lengths}</span></div>
-                 <div className="flex items-center gap-2"><Calculator className="w-3 h-3 text-green-400"/> <span>{constraints.angles}</span></div>
+               <div className="bg-gray-800/50 p-3 rounded border border-gray-700/50 text-sm font-mono text-gray-300 flex flex-col gap-2 shadow-inner">
+                 <div className="flex items-center gap-3"><Calculator className="w-4 h-4 text-blue-400"/> <span>{constraints.lengths}</span></div>
+                 <div className="flex items-center gap-3"><Calculator className="w-4 h-4 text-green-400"/> <span>{constraints.angles}</span></div>
                </div>
 
                <div className="grid grid-cols-1 gap-1">
@@ -1005,10 +1007,16 @@ export default function App() {
                </div>
             </div>
             
-            <button onClick={() => setAutoRotate(!autoRotate)} className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-800 transition-colors">
-              <span className="text-xs text-gray-300">Auto Rotate</span>
-              <div className={`w-8 h-4 rounded-full relative transition-colors ${autoRotate ? 'bg-blue-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${autoRotate ? 'left-4.5' : 'left-0.5'}`} /></div>
-           </button>
+            <div className="space-y-2">
+               <button onClick={() => setShowLabels(!showLabels)} className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-800 transition-colors">
+                 <span className="text-xs text-gray-300">Show Labels</span>
+                 <div className={`w-8 h-4 rounded-full relative transition-colors ${showLabels ? 'bg-blue-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${showLabels ? 'left-4.5' : 'left-0.5'}`} /></div>
+               </button>
+               <button onClick={() => setAutoRotate(!autoRotate)} className="flex items-center justify-between w-full p-2 rounded hover:bg-gray-800 transition-colors">
+                 <span className="text-xs text-gray-300">Auto Rotate</span>
+                 <div className={`w-8 h-4 rounded-full relative transition-colors ${autoRotate ? 'bg-blue-600' : 'bg-gray-700'}`}><div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${autoRotate ? 'left-4.5' : 'left-0.5'}`} /></div>
+               </button>
+            </div>
           </>
         )}
 
@@ -1027,7 +1035,7 @@ export default function App() {
                    <div className="flex justify-between items-start mb-4">
                      <span className="bg-blue-900/50 text-blue-300 text-xs font-bold px-2 py-1 rounded border border-blue-800/50 uppercase tracking-wide">{quizState.system}</span>
                    </div>
-                   <h3 className="text-sm text-gray-400 uppercase tracking-wider font-bold mb-2">Identify {isFourIndex ? '(h k i l)' : '(h k l)'}</h3>
+                   <h3 className="text-sm text-gray-400 tracking-wider font-bold mb-2"><span className="uppercase">Identify</span> {isFourIndex ? '(h k i l)' : '(h k l)'}</h3>
                    <div className="bg-black/30 p-3 rounded-lg border border-gray-700/50 mb-4">
                        <p className="text-xs text-gray-400 italic text-center">Rotate the model to read the intercept labels!</p>
                    </div>
@@ -1056,11 +1064,16 @@ export default function App() {
                    <h3 className="text-sm text-gray-400 uppercase tracking-wider font-bold mb-2">Draw Plane <span className="text-emerald-400 font-mono">({quizState.target.h} {quizState.target.k} {isFourIndex ? -(quizState.target.h + quizState.target.k) + ' ' : ''}{quizState.target.l})</span></h3>
                    
                    <div className="bg-black/30 p-2 rounded-lg border border-gray-700/50 mb-4 space-y-3">
-                        {['h', 'k', isFourIndex?'i':null, 'l'].filter(Boolean).map(axis => (
+                        {['h', 'k', isFourIndex?'i':null, 'l'].filter(Boolean).map(axis => {
+                            const axisLabel = isFourIndex 
+                                ? (axis === 'h' ? 'a₁' : axis === 'k' ? 'a₂' : axis === 'i' ? 'a₃' : 'c')
+                                : (axis === 'h' ? 'a' : axis === 'k' ? 'b' : 'c');
+                                
+                            return (
                             <div key={axis} className="bg-gray-800/50 p-2 rounded border border-gray-700/50 shadow-inner">
                                 <div className="flex justify-between items-center mb-2">
-                                    <label className="text-[10px] font-semibold text-gray-400 uppercase flex items-center gap-1">
-                                        <span className="text-emerald-400 font-mono text-xs">{isFourIndex && axis==='h'?'a₁':isFourIndex && axis==='k'?'a₂':isFourIndex && axis==='i'?'a₃':axis}</span> Partitions
+                                    <label className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">
+                                        <span className="text-emerald-400 font-mono text-xs lowercase">{axisLabel}</span> <span className="uppercase">Partitions</span>
                                     </label>
                                     <span className="text-[10px] font-bold font-mono text-emerald-400 bg-emerald-900/30 px-1.5 py-0.5 rounded">{partitions[axis]}</span>
                                 </div>
@@ -1074,7 +1087,7 @@ export default function App() {
                                    className="w-full h-1 bg-gray-700 rounded-lg cursor-pointer accent-emerald-500" 
                                 />
                             </div>
-                        ))}
+                        )})}
                         
                         <div className="flex justify-between items-center px-2 pt-2 border-t border-gray-700/50">
                             <span className="text-xs font-semibold text-gray-400 uppercase">Points Selected:</span>

@@ -2,11 +2,11 @@
 
 An interactive, 3D educational tool designed to help students and researchers visualize crystallographic planes and directions. Built with **React**, **Three.js**, and **Tailwind CSS**.
 
-## 🚀 Live Demo
+## Live Demo
 
 [Check out the live app here!](https://miller-indice-visualizer.vercel.app)
 
-## ✨ Features
+## Features
 
 * **Dynamic 3D Rendering**: Rotate, zoom, and pan around crystal lattices to understand spatial relationships.
 
@@ -25,7 +25,7 @@ An interactive, 3D educational tool designed to help students and researchers vi
     * **Draw Plane:** A free-form 3D sandbox. Define custom grid partitions for each specific axis, click to place nodes directly in 3D space, and construct physical planes. Features robust validation to accept any mathematically valid parallel plane.
 
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Framework**: [React](https://react.dev/)
 
@@ -37,7 +37,7 @@ An interactive, 3D educational tool designed to help students and researchers vi
 
 * **Icons**: [Lucide React](https://lucide.dev/)
 
-## 📦 Installation & Local Development
+## Installation & Local Development
 
 To run this project on your local machine, follow these steps:
 
@@ -67,7 +67,7 @@ To run this project on your local machine, follow these steps:
     enpm run build
     ```
 
-## 📖 How It Works
+## How It Works
 
 **Plane and Direction Logic**
 
@@ -85,7 +85,7 @@ In the "Draw Plane" quiz mode, the engine uses a Three.js raycaster to detect ex
 
 
 
-## 📄 License
+## License
 
 This project is open-source and available under the MIT License.
 
